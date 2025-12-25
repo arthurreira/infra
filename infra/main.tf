@@ -33,6 +33,8 @@ resource "github_repository_file" "workflow" {
     on:
       push:
         branches: ["main"]
+        paths:
+          - 'app/**'
       workflow_dispatch:
     permissions:
       contents: read
