@@ -19,9 +19,9 @@ variable "apps" {
   
   # Default: simple numbered apps
   default = [
-    { name = "app1", subdomain = "app1.arthurreira.dev", visibility = "public" },
-    { name = "app2", subdomain = "app2.arthurreira.dev", visibility = "public" },
-    { name = "app3", subdomain = "app3.arthurreira.dev", visibility = "public" },
+    { name = "hackathon-registration", subdomain = "register.arthurreira.dev", visibility = "public" },
+    { name = "hackathon-schedule", subdomain = "schedule.arthurreira.dev", visibility = "public" },
+    { name = "hackathon-projects", subdomain = "projects.arthurreira.dev", visibility = "public" },
   ]
   
   # Example: Camping Weekend Game
