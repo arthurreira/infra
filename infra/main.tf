@@ -62,57 +62,8 @@ resource "github_repository_file" "workflow" {
         paths:
           - 'app/**'
       workflow_dispatch:
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    concurrency:
-      group: "pages"
-      cancel-in-progress: false
-    jobs:
-      deploy:
-        environment:
-          name: github-pages
           url: $${{ steps.deployment.outputs.page_url }}
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v4
-          - name: Debug repo contents
-            run: |
-              echo "Repository root:"
-              ls -la
-              echo "Checking for app directory:"
-              ls -la app/ || echo "❌ app directory does not exist"
-          - uses: actions/configure-pages@v5
-            with:
-              enablement: true
-          - uses: actions/upload-pages-artifact@v3
-            with:
-              path: "./app"
-          - id: deployment
-            uses: actions/deploy-pages@v4
-  YAML
 }
-
-# Validation: ensure all files created successfully before considering deployment complete
-resource "null_resource" "validate_repos" {
-  for_each = local.apps_by_name
-
-  triggers = {
-    index_sha    = github_repository_file.index[each.key].sha
-    cname_sha    = github_repository_file.cname[each.key].sha
-    workflow_sha = github_repository_file.workflow[each.key].sha
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOH
-      if [ -z "${github_repository_file.index[each.key].sha}" ] || \
-         [ -z "${github_repository_file.cname[each.key].sha}" ] || \
-         [ -z "${github_repository_file.workflow[each.key].sha}" ]; then
-        echo "❌ Failed to create all required files for ${each.key}"
-        exit 1
-      fi
-      echo "✅ ${each.key} repo setup complete with all files"
-    EOH
-  }
-}
+    concurrency:
