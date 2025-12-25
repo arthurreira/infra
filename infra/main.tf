@@ -89,3 +89,26 @@ resource "github_repository_file" "workflow" {
             uses: actions/deploy-pages@v4
   YAML
 }
+
+# Validation: ensure all files created successfully before considering deployment complete
+resource "null_resource" "validate_repos" {
+  for_each = local.apps_by_name
+
+  triggers = {
+    index_sha    = github_repository_file.index[each.key].sha
+    cname_sha    = github_repository_file.cname[each.key].sha
+    workflow_sha = github_repository_file.workflow[each.key].sha
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOH
+      if [ -z "${github_repository_file.index[each.key].sha}" ] || \
+         [ -z "${github_repository_file.cname[each.key].sha}" ] || \
+         [ -z "${github_repository_file.workflow[each.key].sha}" ]; then
+        echo "❌ Failed to create all required files for ${each.key}"
+        exit 1
+      fi
+      echo "✅ ${each.key} repo setup complete with all files"
+    EOH
+  }
+}
