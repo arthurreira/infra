@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars and customize
+# Classic PAT with repo + delete_repo scopes
+github_owner = "arthurreira"
+github_token = "ghp_yourClassicPAT"
+
+# Option 1: simple defaults
+#apps = [
+#  { name = "app1", subdomain = "app1.arthurreira.dev", visibility = "public" },
+#  { name = "app2", subdomain = "app2.arthurreira.dev", visibility = "public" },
+#  { name = "app3", subdomain = "app3.arthurreira.dev", visibility = "public" },
+#]
+
+# Option 2: customize
+#apps = [
+#  { name = "portfolio", subdomain = "www.arthurreira.dev", visibility = "public" },
+#  { name = "blog",       subdomain = "blog.arthurreira.dev", visibility = "public" },
+#  { name = "lab",        subdomain = "lab.arthurreira.dev", visibility = "public" },
+#]

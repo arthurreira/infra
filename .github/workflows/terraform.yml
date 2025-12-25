@@ -1,0 +1,49 @@
+name: Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply changes (otherwise just plan)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
+      # Token must be a classic PAT with repo + delete_repo
+      TF_VAR_github_token: ${{ secrets.GH_PAT }}
+      # Optional: override owner if you don't want the default from variables.tf
+      TF_VAR_github_owner: ${{ vars.GITHUB_OWNER }}
+      # Optional: set apps via repo variable (JSON string)
+      TF_VAR_apps: ${{ vars.APPS_JSON }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform -chdir=infra init
+
+      - name: Terraform Validate
+        run: terraform -chdir=infra validate
+
+      - name: Terraform Plan
+        run: terraform -chdir=infra plan -no-color
+
+      - name: Terraform Apply
+        if: ${{ inputs.apply == true }}
+        run: terraform -chdir=infra apply -auto-approve -no-color

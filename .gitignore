@@ -1,0 +1,17 @@
+.DS_Store
+
+# Terraform local state and caches
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+infra/.terraform/
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Local tooling
+.env
+.env.*
