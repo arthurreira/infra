@@ -3,16 +3,39 @@
 github_owner = "arthurreira"
 github_token = "ghp_yourClassicPAT"
 
-# Option 1: simple defaults
+# ===== Scenario 1: Simple numbered apps (default) =====
 #apps = [
 #  { name = "app1", subdomain = "app1.arthurreira.dev", visibility = "public" },
 #  { name = "app2", subdomain = "app2.arthurreira.dev", visibility = "public" },
 #  { name = "app3", subdomain = "app3.arthurreira.dev", visibility = "public" },
 #]
 
-# Option 2: customize
+# ===== Scenario 2: Camping Weekend Game =====
+# Control game apps from GitHub, players visit the subdomains
 #apps = [
-#  { name = "portfolio", subdomain = "www.arthurreira.dev", visibility = "public" },
-#  { name = "blog",       subdomain = "blog.arthurreira.dev", visibility = "public" },
-#  { name = "lab",        subdomain = "lab.arthurreira.dev", visibility = "public" },
+#  { name = "camping-game", subdomain = "play.arthurreira.dev", visibility = "public" },
+#  { name = "leaderboard", subdomain = "scores.arthurreira.dev", visibility = "public" },
+#  { name = "treasure-hunt", subdomain = "hunt.arthurreira.dev", visibility = "public" },
+#  { name = "admin-panel", subdomain = "admin.arthurreira.dev", visibility = "private" },
+#]
+
+# ===== Scenario 3: Event/Conference Sites =====
+#apps = [
+#  { name = "event-registration", subdomain = "register.arthurreira.dev", visibility = "public" },
+#  { name = "event-schedule", subdomain = "schedule.arthurreira.dev", visibility = "public" },
+#  { name = "live-stream", subdomain = "live.arthurreira.dev", visibility = "public" },
+#]
+
+# ===== Scenario 4: Client Portals =====
+#apps = [
+#  { name = "client-acme", subdomain = "acme.arthurreira.dev", visibility = "private" },
+#  { name = "client-globex", subdomain = "globex.arthurreira.dev", visibility = "private" },
+#  { name = "landing-page", subdomain = "www.arthurreira.dev", visibility = "public" },
+#]
+
+# ===== Scenario 5: Microservices Frontends =====
+#apps = [
+#  { name = "dashboard", subdomain = "dashboard.arthurreira.dev", visibility = "public" },
+#  { name = "api-docs", subdomain = "api.arthurreira.dev", visibility = "public" },
+#  { name = "status-page", subdomain = "status.arthurreira.dev", visibility = "public" },
 #]
