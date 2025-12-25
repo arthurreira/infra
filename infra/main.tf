@@ -14,7 +14,33 @@ resource "github_repository" "apps" {
   description = "Pages app for ${each.value.subdomain}"
 }
 
-# Add Pages workflow (depends on content being created first)
+# Minimal site content - index
+resource "github_repository_file" "index" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = "app/index.html"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Add index.html"
+  content = <<-HTML
+    <!doctype html>
+    <meta charset="utf-8">
+    <title>${each.value.subdomain}</title>
+    <h1>${each.value.subdomain}</h1>
+    <p>Deployed via GitHub Actions + Terraform.</p>
+  HTML
+}
+
+# CNAME for custom domain
+resource "github_repository_file" "cname" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = "app/CNAME"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Set Pages custom domain"
+  content    = each.value.subdomain
+}
+
+# Add Pages workflow - API will create .github/workflows/ automatically
 resource "github_repository_file" "workflow" {
   for_each   = local.apps_by_name
   repository = github_repository.apps[each.key].name
@@ -22,9 +48,10 @@ resource "github_repository_file" "workflow" {
   branch     = github_repository.apps[each.key].default_branch
   commit_message = "Add GitHub Pages deploy workflow"
   
-  # Ensure content files exist before workflow triggers
+  # Depend on content files to ensure they exist first
   depends_on = [
-    github_repository_file.workflows_dir
+    github_repository_file.index,
+    github_repository_file.cname
   ]
   
   content = <<-YAML
@@ -61,43 +88,4 @@ resource "github_repository_file" "workflow" {
           - id: deployment
             uses: actions/deploy-pages@v4
   YAML
-}
-
-# Minimal site content
-resource "github_repository_file" "index" {
-  for_each   = local.apps_by_name
-  repository = github_repository.apps[each.key].name
-  file       = "app/index.html"
-  branch     = github_repository.apps[each.key].default_branch
-  commit_message = "Add index.html"
-  content = <<-HTML
-    <!doctype html>
-    <meta charset="utf-8">
-    <title>${each.value.subdomain}</title>
-    <h1>${each.value.subdomain}</h1>
-    <p>Deployed via GitHub Actions + Terraform.</p>
-  HTML
-}
-# Create .github/workflows directory first
-resource "github_repository_file" "workflows_dir" {
-  for_each   = local.apps_by_name
-  repository = github_repository.apps[each.key].name
-  file       = ".github/workflows/.gitkeep"
-  branch     = github_repository.apps[each.key].default_branch
-  commit_message = "Create workflows directory"
-  content    = ""
-  
-  depends_on = [
-    github_repository_file.index,
-    github_repository_file.cname
-  ]
-}
-# CNAME to set the custom subdomain for this repo's Pages site
-resource "github_repository_file" "cname" {
-  for_each   = local.apps_by_name
-  repository = github_repository.apps[each.key].name
-  file       = "app/CNAME"
-  branch     = github_repository.apps[each.key].default_branch
-  commit_message = "Set Pages custom domain"
-  content    = each.value.subdomain
 }
