@@ -54,7 +54,7 @@ resource "github_repository_file" "workflow" {
   ]
 
   content = <<-YAML
-    name: Deploy static content to Pages
+    name: Deploy to GitHub Pages
     on:
       push:
         branches: ["main"]
@@ -67,28 +67,18 @@ resource "github_repository_file" "workflow" {
       id-token: write
     concurrency:
       group: "pages"
-      cancel-in-progress: false
+      cancel-in-progress: true
     jobs:
       deploy:
-        environment:
-          name: github-pages
-          url: $${{ steps.deployment.outputs.page_url }}
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
-          - name: Debug repo contents
-            run: |
-              echo "Repository root:"
-              ls -la
-              echo "Checking for app directory:"
-              ls -la app/ || echo "❌ app directory does not exist"
-          - uses: actions/configure-pages@v5
-            with:
-              enablement: true
+          - name: Verify app directory
+            run: ls -la app/
+          - uses: actions/configure-pages@v4
           - uses: actions/upload-pages-artifact@v3
             with:
-              path: "./app"
-          - id: deployment
-            uses: actions/deploy-pages@v4
+              path: './app'
+          - uses: actions/deploy-pages@v4
   YAML
 }
