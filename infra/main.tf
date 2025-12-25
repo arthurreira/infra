@@ -24,8 +24,7 @@ resource "github_repository_file" "workflow" {
   
   # Ensure content files exist before workflow triggers
   depends_on = [
-    github_repository_file.index,
-    github_repository_file.cname
+    github_repository_file.github_dir
   ]
   
   content = <<-YAML
@@ -79,7 +78,20 @@ resource "github_repository_file" "index" {
     <p>Deployed via GitHub Actions + Terraform.</p>
   HTML
 }
-
+# Create .github directory first
+resource "github_repository_file" "github_dir" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = ".github/.gitkeep"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Create .github directory"
+  content    = ""
+  
+  depends_on = [
+    github_repository_file.index,
+    github_repository_file.cname
+  ]
+}
 # CNAME to set the custom subdomain for this repo's Pages site
 resource "github_repository_file" "cname" {
   for_each   = local.apps_by_name
