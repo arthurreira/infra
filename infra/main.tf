@@ -24,7 +24,7 @@ resource "github_repository_file" "workflow" {
   
   # Ensure content files exist before workflow triggers
   depends_on = [
-    github_repository_file.github_dir
+    github_repository_file.workflows_dir
   ]
   
   content = <<-YAML
@@ -78,13 +78,13 @@ resource "github_repository_file" "index" {
     <p>Deployed via GitHub Actions + Terraform.</p>
   HTML
 }
-# Create .github directory first
-resource "github_repository_file" "github_dir" {
+# Create .github/workflows directory first
+resource "github_repository_file" "workflows_dir" {
   for_each   = local.apps_by_name
   repository = github_repository.apps[each.key].name
-  file       = ".github/.gitkeep"
+  file       = ".github/workflows/.gitkeep"
   branch     = github_repository.apps[each.key].default_branch
-  commit_message = "Create .github directory"
+  commit_message = "Create workflows directory"
   content    = ""
   
   depends_on = [
