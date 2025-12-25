@@ -14,13 +14,20 @@ resource "github_repository" "apps" {
   description = "Pages app for ${each.value.subdomain}"
 }
 
-# Add Pages workflow
+# Add Pages workflow (depends on content being created first)
 resource "github_repository_file" "workflow" {
   for_each   = local.apps_by_name
   repository = github_repository.apps[each.key].name
   file       = ".github/workflows/deploy.yml"
   branch     = github_repository.apps[each.key].default_branch
   commit_message = "Add GitHub Pages deploy workflow"
+  
+  # Ensure content files exist before workflow triggers
+  depends_on = [
+    github_repository_file.index,
+    github_repository_file.cname
+  ]
+  
   content = <<-YAML
     name: Deploy static content to Pages
     on:
