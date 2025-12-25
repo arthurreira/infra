@@ -47,6 +47,12 @@ resource "github_repository_file" "workflow" {
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
+          - name: Debug repo contents
+            run: |
+              echo "Repository root:"
+              ls -la
+              echo "Checking for app directory:"
+              ls -la app/ || echo "❌ app directory does not exist"
           - uses: actions/configure-pages@v5
             with:
               enablement: true
