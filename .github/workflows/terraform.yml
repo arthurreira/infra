@@ -47,3 +47,16 @@ jobs:
       - name: Terraform Outputs (domains and repos)
         if: ${{ inputs.apply == true }}
         run: terraform -chdir=infra output -json
+
+      - name: Trigger deploy in each app repo
+        if: ${{ inputs.apply == true }}
+        run: |
+          repos=("hackathon-registration" "hackathon-schedule" "hackathon-projects")
+          for repo in "${repos[@]}"; do
+            echo "Triggering deploy workflow in $repo..."
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GH_PAT }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/arthurreira/$repo/actions/workflows/deploy.yml/dispatches \
+              -d '{"ref":"main"}' || echo "Warning: Could not trigger $repo (workflow may not exist yet)"
+          done
