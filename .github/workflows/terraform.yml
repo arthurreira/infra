@@ -43,3 +43,7 @@ jobs:
       - name: Terraform Apply
         if: ${{ inputs.apply == true }}
         run: terraform -chdir=infra apply -auto-approve -no-color
+
+      - name: Terraform Outputs (domains and repos)
+        if: ${{ inputs.apply == true }}
+        run: terraform -chdir=infra output -json
