@@ -31,10 +31,6 @@ resource "github_repository_file" "workflow" {
   content = <<-YAML
     name: Deploy static content to Pages
     on:
-      push:
-        branches: ["main"]
-        paths:
-          - 'app/**'
       workflow_dispatch:
     permissions:
       contents: read
