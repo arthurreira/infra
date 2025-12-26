@@ -73,6 +73,8 @@ resource "github_repository_file" "workflow" {
               </html>
               EOF
           - uses: actions/configure-pages@v5
+            with:
+              enablement: true
           - uses: actions/upload-pages-artifact@v3
             with:
               path: './app'
