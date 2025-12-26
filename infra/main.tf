@@ -91,6 +91,8 @@ resource "github_repository_file" "workflow" {
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
+          - name: Remove old root CNAME if exists
+            run: rm -f CNAME
           - uses: actions/upload-pages-artifact@v3
             with:
               path: './app'
