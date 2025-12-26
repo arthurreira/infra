@@ -38,7 +38,7 @@ resource "github_repository_file" "starter_content" {
   file       = "app/index.html"
   branch     = github_repository.apps[each.key].default_branch
   commit_message = "Add starter content"
-  overwrite_on_create = false
+  overwrite_on_create = true
   
   content = <<-HTML
     <!DOCTYPE html>
