@@ -48,6 +48,10 @@ jobs:
         if: ${{ inputs.apply == true }}
         run: terraform -chdir=infra output -json
 
+      - name: Wait for commits to propagate
+        if: ${{ inputs.apply == true }}
+        run: sleep 10
+
       - name: Trigger deploy in each app repo
         if: ${{ inputs.apply == true }}
         run: |
@@ -58,5 +62,5 @@ jobs:
               -H "Authorization: token ${{ secrets.GH_PAT }}" \
               -H "Accept: application/vnd.github.v3+json" \
               https://api.github.com/repos/arthurreira/$repo/actions/workflows/deploy.yml/dispatches \
-              -d '{"ref":"main"}' || echo "Warning: Could not trigger $repo (workflow may not exist yet)"
+              -d '{"ref":"main"}' || echo "Warning: Could not trigger $repo"
           done
