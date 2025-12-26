@@ -93,6 +93,8 @@ resource "github_repository_file" "workflow" {
           - uses: actions/checkout@v4
           - name: Remove old root CNAME if exists
             run: rm -f CNAME
+          - name: Verify app directory contents
+            run: ls -la app/
           - uses: actions/upload-pages-artifact@v3
             with:
               path: './app'
