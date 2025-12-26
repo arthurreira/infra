@@ -1,94 +1,165 @@
 # Terraform GitHub Pages Infra
 
-One Terraform project to create and configure multiple GitHub repositories, each with a GitHub Pages workflow and a custom subdomain (via your wildcard DNS like `*.arthurreira.dev`).
+Create multiple GitHub repositories with GitHub Pages and custom subdomains using Terraform + GitHub Actions automation.
 
 Configs live in `infra/`.
 
 ## What it creates
 
-- 3 repos by default: `app1`, `app2`, `app3` (public)
-- In each repo:
-	- `app/index.html` and `app/CNAME` (your subdomain)
-	- A Pages deploy workflow that enables Pages and publishes `app/`
-- With wildcard DNS in place, you’ll get:
-	- https://app1.arthurreira.dev
-	- https://app2.arthurreira.dev
-	- https://app3.arthurreira.dev
+**By default:** 3 repos (hackathon-registration, hackathon-schedule, hackathon-projects)
+
+**In each repo:**
+- `CNAME` file with custom subdomain (e.g., register.arthurreira.dev)
+- `.github/workflows/deploy.yml` that auto-deploys to Pages on push
+- Pages enabled and configured via Terraform
+- Automatic Pages deployments on every commit to main
+
+**Result:** With wildcard DNS (`*.arthurreira.dev → GitHub Pages`), you get:
+- https://register.arthurreira.dev
+- https://schedule.arthurreira.dev
+- https://projects.arthurreira.dev
+
+## Architecture
+
+**Two separate concerns:**
+
+1. **Terraform (infra repo)**
+   - Creates GitHub repositories
+   - Enables GitHub Pages (via Terraform PAT permissions)
+   - Sets custom domains (CNAME files)
+   - Generates deploy workflows
+   - Imports existing repos to avoid recreation
+
+2. **Deploy workflows (app repos)**
+   - Auto-trigger on push to main
+   - Build static content (creates `./app/index.html`)
+   - Upload and deploy to Pages
+   - Run with default GitHub Actions permissions (no configuration needed)
 
 ## Requirements
 
-- Classic GitHub Personal Access Token (PAT) with `repo` + `delete_repo` scopes.
-- Terraform >= 1.5, provider `integrations/github` ~> 6.0.
+- **Classic GitHub Personal Access Token (PAT)** with `repo` + `delete_repo` scopes
+- **Terraform >= 1.5**, provider `integrations/github` ~> 6.0
+- **Wildcard DNS** pointing to GitHub Pages (`.arthurreira.dev` → GitHub's IP)
 
-Notes:
-- The built-in GitHub Actions `GITHUB_TOKEN` cannot create repos; use a classic PAT.
-- Some org policies block automatic Pages enablement. If the first deploy fails, open Settings → Pages in each new repo, set Source = GitHub Actions once. Subsequent deploys work.
+## How to run
 
-## Configure apps
-
-Edit `infra/variables.tf` `var.apps`, or create your own `infra/terraform.tfvars` using `infra/terraform.tfvars.example`.
-
-## How to run (macOS)
-
-Quick minimal (env vars)
+### Local (macOS/Linux)
 
 ```bash
 export TF_VAR_github_owner="arthurreira"
 export TF_VAR_github_token="ghp_yourClassicPAT"
-# Optional: define apps inline via env var (JSON/HCL works)
-export TF_VAR_apps='[
-	{"name":"app1","subdomain":"app1.arthurreira.dev","visibility":"public"},
-	{"name":"app2","subdomain":"app2.arthurreira.dev","visibility":"public"},
-	{"name":"app3","subdomain":"app3.arthurreira.dev","visibility":"public"}
-]'
-terraform -chdir=infra init
-terraform -chdir=infra apply
-```
 
-Option A — environment variable
-
-```bash
-export TF_VAR_github_token="ghp_yourClassicPAT"
 terraform -chdir=infra init
-terraform -chdir=infra validate
 terraform -chdir=infra plan
 terraform -chdir=infra apply
 ```
 
-Option B — tfvars file
+**OR** use a tfvars file:
 
 ```bash
 cp infra/terraform.tfvars.example infra/terraform.tfvars
-# edit infra/terraform.tfvars to set github_owner, github_token, and apps
+# Edit terraform.tfvars with your values
 terraform -chdir=infra init
-terraform -chdir=infra validate
-terraform -chdir=infra plan
 terraform -chdir=infra apply
 ```
+
+### Customize apps
+
+Edit `infra/variables.tf` (default) or `infra/terraform.tfvars`:
+
+```hcl
+variable "apps" {
+  type = list(object({
+    name      = string
+    subdomain = string
+    visibility = string
+  }))
+  default = [
+    {
+      name       = "hackathon-registration"
+      subdomain  = "register.arthurreira.dev"
+      visibility = "public"
+    },
+    # ... more apps
+  ]
+}
+```
+
+## How to run in GitHub Actions
+
+This repo includes a Terraform workflow that handles everything automatically.
+
+**Setup:**
+1. Add repository secret in https://github.com/arthurreira/infra/settings/secrets/actions:
+   - `GH_PAT`: Classic PAT with `repo` + `delete_repo` scopes
+
+**Workflow: [.github/workflows/terraform.yml](.github/workflows/terraform.yml)**
+
+**To run:**
+1. Go to Actions → Terraform
+2. Click "Run workflow"
+3. Toggle `apply` to `true` to execute apply (default is plan-only)
+4. Workflow will:
+   - Initialize Terraform
+   - Validate configuration
+   - Plan changes
+   - Import existing repos (avoid recreation)
+   - Apply changes
+   - Output repository URLs
+
+**Automation after apply:**
+- New repos are created
+- Pages is enabled (Terraform handles this)
+- Deploy workflows are auto-generated
+- Deploy workflows auto-trigger on the initial commits
+- Each app repo's Pages site goes live within seconds
 
 ## Outputs
 
 After apply, Terraform prints:
 
-- `repositories`: the list of repo names created
-- `app_urls`: a map of repo → expected custom domain URL
+```json
+{
+  "repositories": ["hackathon-projects", "hackathon-registration", "hackathon-schedule"],
+  "app_urls": {
+    "hackathon-projects": "https://projects.arthurreira.dev",
+    "hackathon-registration": "https://register.arthurreira.dev",
+    "hackathon-schedule": "https://schedule.arthurreira.dev"
+  }
+}
+```
 
-## Customize further
+## Important notes
 
-- Change repo names or add/remove apps in `var.apps`.
-- Want real app scaffolds (React/Vite) per repo? We can add those to each repo via `github_repository_file` or a post-create workflow.
+### Pages is enabled via Terraform, not Actions
+- Terraform uses your PAT (which has admin permissions)
+- GitHub Actions workflows use limited GITHUB_TOKEN (cannot enable Pages)
+- This prevents 403 "Resource not accessible by integration" errors
 
-## Run in GitHub Actions
+### Existing repos are imported
+- Workflow includes `terraform import` step before apply
+- Prevents "name already exists" errors on re-runs
+- Allows idempotent Terraform (run apply 100x, same result)
 
-You can keep variables in this repo’s Actions settings and run Terraform from CI.
+### Deploy workflows run automatically
+- Each app repo's workflow triggers on push to main
+- Builds `./app/` and uploads to Pages
+- No manual deployment needed
 
-- Add repository secret:
-	- `GH_PAT`: classic PAT with `repo` + `delete_repo`
-- Optional repository variables:
-	- `APPS_JSON`: JSON string for `var.apps` (e.g. `[{"name":"app1","subdomain":"app1.arthurreira.dev","visibility":"public"},...]`)
-	- `GITHUB_OWNER`: override owner (defaults to `arthurreira` in variables)
+## Troubleshooting
 
-Workflow: [/.github/workflows/terraform.yml](.github/workflows/terraform.yml)
+**Terraform fails with "name already exists"**
+- The import step should prevent this
+- If it happens, the repos exist in GitHub but not in Terraform state
+- Try deleting repos and re-running apply
 
-Trigger manually with "Run workflow"; toggle the `apply` input to perform an apply.
+**Pages site shows 404**
+- Check Pages settings in repo → Pages (should show "Source: GitHub Actions")
+- Deploy workflow should have completed successfully (check Actions tab)
+- DNS propagation may still be in progress (wait 5-10 minutes)
 
+**Deploy workflow fails**
+- Check workflow logs in the app repo's Actions tab
+- Most likely: Pages not enabled yet (Terraform apply should fix this)
+- Or: CNAME file not committed (Terraform apply should fix this)
