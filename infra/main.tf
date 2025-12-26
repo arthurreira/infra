@@ -13,10 +13,7 @@ resource "github_repository" "apps" {
   description = "Pages app for ${each.value.subdomain}"
 
   pages {
-    source {
-      branch = "main"
-      path   = "/"
-    }
+    build_type = "workflow"
   }
 }
 
