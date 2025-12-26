@@ -58,8 +58,6 @@ resource "github_repository_file" "workflow" {
     on:
       push:
         branches: ["main"]
-        paths:
-          - 'app/**'
     permissions:
       contents: read
       pages: write
