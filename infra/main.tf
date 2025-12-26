@@ -21,7 +21,7 @@ resource "github_repository" "apps" {
 resource "github_repository_file" "cname" {
   for_each   = local.apps_by_name
   repository = github_repository.apps[each.key].name
-  file       = "CNAME"
+  file       = "app/CNAME"
   branch     = github_repository.apps[each.key].default_branch
   commit_message = "Set custom domain"
   content    = each.value.subdomain
