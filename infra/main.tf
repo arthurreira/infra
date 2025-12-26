@@ -60,7 +60,6 @@ resource "github_repository_file" "workflow" {
         branches: ["main"]
         paths:
           - 'app/**'
-      workflow_dispatch:
     permissions:
       contents: read
       pages: write
