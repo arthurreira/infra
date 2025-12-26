@@ -21,6 +21,7 @@ resource "github_repository_file" "cname" {
   branch     = github_repository.apps[each.key].default_branch
   commit_message = "Set custom domain"
   content    = each.value.subdomain
+  overwrite_on_create = true
 }
 
 # Add Pages workflow that builds content
