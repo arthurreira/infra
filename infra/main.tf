@@ -45,18 +45,77 @@ resource "github_repository_file" "starter_content" {
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>${each.value.subdomain}</title>
-      <style>
-        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-        h1 { color: #333; }
-      </style>
+      <link rel="stylesheet" href="style.css">
     </head>
     <body>
       <h1>${each.value.subdomain}</h1>
       <p>This is a starter page. Edit <code>app/index.html</code> in this repository to customize your site.</p>
       <p>You can add CSS, JavaScript, images, and more to the <code>app/</code> directory.</p>
+      <script src="script.js"></script>
     </body>
     </html>
   HTML
+}
+
+# Add starter CSS file
+resource "github_repository_file" "starter_css" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = "app/style.css"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Add starter CSS"
+  overwrite_on_create = false
+  
+  content = <<-CSS
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    h1 {
+      color: #0066cc;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 10px;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  CSS
+}
+
+# Add starter JavaScript file
+resource "github_repository_file" "starter_js" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = "app/script.js"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Add starter JavaScript"
+  overwrite_on_create = false
+  
+  content = <<-JS
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('${each.value.subdomain} loaded successfully!');
+    });
+  JS
+}
+
+# Create images directory
+resource "github_repository_file" "images_folder" {
+  for_each   = local.apps_by_name
+  repository = github_repository.apps[each.key].name
+  file       = "app/images/.gitkeep"
+  branch     = github_repository.apps[each.key].default_branch
+  commit_message = "Add images directory"
+  overwrite_on_create = false
+  content    = ""
 }
 
 
