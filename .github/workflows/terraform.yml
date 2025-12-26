@@ -40,6 +40,14 @@ jobs:
       - name: Terraform Plan
         run: terraform -chdir=infra plan -no-color
 
+      - name: Import existing repos
+        if: ${{ inputs.apply == true }}
+        run: |
+          cd infra
+          terraform import 'github_repository.apps["hackathon-projects"]' hackathon-projects || true
+          terraform import 'github_repository.apps["hackathon-schedule"]' hackathon-schedule || true
+          terraform import 'github_repository.apps["hackathon-registration"]' hackathon-registration || true
+
       - name: Terraform Apply
         if: ${{ inputs.apply == true }}
         run: terraform -chdir=infra apply -auto-approve -no-color
