@@ -70,6 +70,11 @@ resource "github_repository_file" "workflow" {
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
+          - name: Debug filesystem
+            run: |
+              pwd
+              ls -la
+              ls -la app || echo "app directory missing"
           - name: Verify app directory
             run: ls -la app/
           - uses: actions/configure-pages@v4
