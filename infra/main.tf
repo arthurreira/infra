@@ -11,6 +11,13 @@ resource "github_repository" "apps" {
   has_issues = true
   delete_branch_on_merge = true
   description = "Pages app for ${each.value.subdomain}"
+
+  pages {
+    source {
+      branch = "main"
+      path   = "/"
+    }
+  }
 }
 
 # Add CNAME for custom domain
@@ -72,9 +79,6 @@ resource "github_repository_file" "workflow" {
               </body>
               </html>
               EOF
-          - uses: actions/configure-pages@v5
-            with:
-              enablement: true
           - uses: actions/upload-pages-artifact@v3
             with:
               path: './app'
