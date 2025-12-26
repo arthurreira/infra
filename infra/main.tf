@@ -14,6 +14,7 @@ resource "github_repository" "apps" {
 
   pages {
     build_type = "workflow"
+    cname      = each.value.subdomain
   }
 }
 
